@@ -3,11 +3,12 @@
 #include <cerrno>
 #include <cstddef>
 #include <dirent.h>
-#include <fcntl.h>
 #include <iostream>
 #include <map>
+#include <string.h>
 #include <string>
 #include <sys/stat.h>
+#include <unistd.h>
 #include <utility>
 
 void prepair(std::string dirName) {
@@ -40,7 +41,23 @@ void regist(std::string name, std::string path, std::string type) {
   writer->writeSimpleMap(programs);
   delete writer;
 }
-void execute(std::string type) {}
+void execute(std::string type, char *file) {
+  FileReader *reader = new FileReader("resources/types");
+  auto typesMap = reader->readMultiMap();
+  delete reader;
+  reader = new FileReader("resources/progs");
+  auto programs = reader->readSimpleMap();
+  delete reader;
+  if (typesMap.count(type)) {
+    auto name = *(typesMap[type].begin());
+    auto path = programs[name];
+    char *pPath = new char[path.length() + 1];
+    strcpy(pPath, path.c_str());
+    char *argVec[3] = {pPath, file, NULL};
+    execve(argVec[0], argVec, NULL);
+    std::cout << errno;
+  }
+}
 
 int main(int argc, char *argv[]) {
   if (argc < 2)
@@ -53,9 +70,9 @@ int main(int argc, char *argv[]) {
     return 0;
   }
   if (std::string(argv[1]) == "-e") {
-    if (argc < 3)
+    if (argc < 4)
       return 0;
-    execute(argv[2]);
+    execute(argv[2], argv[3]);
     return 0;
   }
   return 0;
