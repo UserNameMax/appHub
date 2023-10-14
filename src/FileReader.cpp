@@ -4,8 +4,14 @@
 #include <string>
 #include <utility>
 FileReader::FileReader(std::string path) { _fstream = std::ifstream(path); }
-FileReader::~FileReader() { _fstream.close(); }
+FileReader::~FileReader() {
+  if (_fstream.is_open())
+    _fstream.close();
+}
 std::map<std::string, std::string> FileReader::readSimpleMap() {
+  if (!_fstream.is_open()) {
+    return std::map<std::string, std::string>();
+  }
   std::map<std::string, std::string> result;
   std::string line;
   while (!_fstream.eof()) {
@@ -17,6 +23,9 @@ std::map<std::string, std::string> FileReader::readSimpleMap() {
   return result;
 };
 std::map<std::string, std::set<std::string>> FileReader::readMultiMap() {
+  if (!_fstream.is_open()) {
+    return std::map<std::string, std::set<std::string>>();
+  }
   std::map<std::string, std::set<std::string>> result;
   std::string line;
   while (!_fstream.eof()) {
