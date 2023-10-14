@@ -1,18 +1,21 @@
+#include "../include/FileReader.h"
 #include "../include/FileWriter.h"
 #include <iostream>
 #include <map>
 #include <string>
+#include <utility>
 
 int main() {
-  FileWriter writer = FileWriter("text.txt");
-  std::map<std::string, std::set<std::string>> map;
-  map.insert(
-      std::pair("key1", std::set<std::string>{"value0", "value1", "value2"}));
-  map.insert(
-      std::pair("key2", std::set<std::string>{"value0", "value1", "value2"}));
-  map.insert(
-      std::pair("key3", std::set<std::string>{"value0", "value1", "value2"}));
-  writer.writeMultiMap(map);
+  FileWriter *writer = new FileWriter("text.txt");
+  writer->writeSimpleMap(
+      std::map{std::pair<std::string, std::string>{"key", "value"},
+               std::pair<std::string, std::string>{"key2", "value"}});
+  delete writer;
+  FileReader reader = FileReader("text.txt");
+  auto map = reader.readSimpleMap();
+  for (auto i : map) {
+    std::cout << i.first << ": " << i.second << "\n";
+  }
   std::cout << "hello world\n";
   return 0;
 }
