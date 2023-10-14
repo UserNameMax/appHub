@@ -1,0 +1,17 @@
+cmake_minimum_required(VERSION 3.0.0)
+project(sample VERSION 0.1.0 LANGUAGES C CXX)
+
+include(CTest)
+enable_testing()
+
+set(PROJECT_HEADERS_DIR include)
+set(PROJECT_SOURCES_DIR src)
+
+file(GLOB_RECURSE HEADERS ${PROJECT_HEADERS_DIR}/*.h)
+file(GLOB_RECURSE SOURCES ${PROJECT_SOURCES_DIR}/*.cpp)
+
+add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES})
+
+set(CPACK_PROJECT_NAME ${PROJECT_NAME})
+set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
+include(CPack)
