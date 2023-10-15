@@ -11,6 +11,8 @@
 #include <unistd.h>
 #include <utility>
 
+std::string resPath;
+
 void prepair(std::string dirName) {
   auto pDir = opendir(dirName.c_str());
   if (pDir == NULL && errno == 2) {
@@ -20,10 +22,10 @@ void prepair(std::string dirName) {
   }
 }
 void regist(std::string name, std::string path, std::string type) {
-  FileReader *reader = new FileReader("resources/types");
+  FileReader *reader = new FileReader(resPath + "/types");
   auto typesMap = reader->readMultiMap();
   delete reader;
-  reader = new FileReader("resources/progs");
+  reader = new FileReader(resPath + "/progs");
   auto programs = reader->readSimpleMap();
   delete reader;
   if (typesMap.count(type)) {
@@ -34,22 +36,35 @@ void regist(std::string name, std::string path, std::string type) {
     typesMap.insert(std::pair(type, std::set{name}));
   }
   programs[name] = path;
-  FileWriter *writer = new FileWriter("resources/types");
+  FileWriter *writer = new FileWriter(resPath + "/types");
   writer->writeMultiMap(typesMap);
   delete writer;
-  writer = new FileWriter("resources/progs");
+  writer = new FileWriter(resPath + "/progs");
   writer->writeSimpleMap(programs);
   delete writer;
 }
 void execute(std::string type, char *file) {
-  FileReader *reader = new FileReader("resources/types");
+  FileReader *reader = new FileReader(resPath + "/types");
   auto typesMap = reader->readMultiMap();
   delete reader;
-  reader = new FileReader("resources/progs");
+  reader = new FileReader(resPath + "/progs");
   auto programs = reader->readSimpleMap();
   delete reader;
   if (typesMap.count(type)) {
-    auto name = *(typesMap[type].begin());
+    auto progs = typesMap[type];
+    auto name = *(progs.begin());
+    if (progs.size() > 1) {
+      for (auto selectProg = progs.cbegin(); selectProg != progs.cend();
+           ++selectProg) {
+        char answer;
+        std::cout << "open with " << *selectProg << " (y/n): ";
+        std::cin >> answer;
+        if (answer == 'y') {
+          name = *selectProg;
+          break;
+        }
+      }
+    }
     auto path = programs[name];
     char *pPath = new char[path.length() + 1];
     strcpy(pPath, path.c_str());
@@ -62,7 +77,10 @@ void execute(std::string type, char *file) {
 int main(int argc, char *argv[]) {
   if (argc < 2)
     return 0;
-  prepair("./resources");
+  auto path = std::string(argv[0]);
+  path.erase(path.begin() + path.find_last_of("/"), path.end());
+  resPath = path + "/resources";
+  prepair(resPath);
   if (std::string(argv[1]) == "-r") {
     if (argc < 5)
       return 0;
